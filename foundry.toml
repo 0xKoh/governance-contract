@@ -4,6 +4,7 @@ out = "out"
 libs = ["lib"]
 remappings = [
     "@openzeppelin/=lib/openzeppelin-contracts/contracts/",
+    "@diamond-standard/=lib/Diamond-Foundry/src/".
 ]
 
 # See more config options https://github.com/foundry-rs/foundry/tree/master/config
