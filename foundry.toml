@@ -1,10 +1,14 @@
 [profile.default]
 src = "src"
+solc = "0.8.19"
 out = "out"
 libs = ["lib"]
+gas_reports = ["*"]
 remappings = [
     "@openzeppelin/=lib/openzeppelin-contracts/contracts/",
-    "@diamond-standard/=lib/Diamond-Foundry/src/".
+    "@diamond-standard/=lib/Diamond-Foundry/src/",
+    "forge-std/=lib/forge-std/src/",
 ]
 
-# See more config options https://github.com/foundry-rs/foundry/tree/master/config
+[rpc_endpoints]
+goerli = "https://eth-goerli.g.alchemy.com/v2/zdTXkM4pBnyi95m5eQ_wJeTwXd7ry7R-"
