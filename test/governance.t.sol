@@ -6,9 +6,9 @@ import "../src/Governance.sol";
 
 contract GovernanceTest is Test {
 
-    Governance gvContract;
+    Governance _gvContract;
 
-    struct context {
+    struct Context {
         address sender;
         string content;
     }
@@ -17,16 +17,16 @@ contract GovernanceTest is Test {
         gvContract = new Governance("Governance", "1");
     }
 
-    function test_Propose()
+    function testPropose()
         public
     {
         // gvContract.proposing();
         // gvContract.voting(1, true);
     }
 
-    function test_GetApproval() 
-    view
-    public
+    function testGetApproval() 
+        view
+        public
     returns(uint256)
     {
         return gvContract.getApproval(1);

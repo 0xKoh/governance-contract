@@ -1,11 +1,8 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.8.19;
 
-import "@openzeppelin/token/ERC20/IERC20.sol";
 import "@openzeppelin/utils/cryptography/EIP712.sol";
-import "@diamond-standard/diamond.sol";
 import "@openzeppelin/utils/cryptography/ECDSA.sol";
-import "@openzeppelin/utils/Context.sol";
 
 contract Governance is EIP712 {
 
@@ -18,10 +15,11 @@ contract Governance is EIP712 {
         uint256 approval;
     }
 
-    // context of a signature.
-    struct context {
+    // signature message typed struct.
+    struct message {
+        uint256 id;
         address sender;
-        string parameters;
+        string contents;
     }
 
     // Proposal number.
@@ -49,7 +47,7 @@ contract Governance is EIP712 {
     ); 
 
 
-    // Vote for a proposal.
+    // set proposal contents.
     function _setStatus (
         uint256 _id, 
         string calldata _name, 
@@ -69,49 +67,51 @@ contract Governance is EIP712 {
 
 
     // validate the signature and Get sender address.
-    function verify (
-        bytes calldata _signature,
-        string memory _method,
-        context calldata _calldata
-    ) internal pure returns (address) {
-        bytes32 digest = keccak256(abi.encode(
+    function _verify (
+        uint256 _id,
+        address _sender,
+        string calldata _contents,
+        string calldata _method,
+        bytes calldata _signature
+    ) internal view returns (address) {
+        bytes32 digest = _hashTypedDataV4(keccak256(abi.encode(
             keccak256(bytes(_method)),
-            _calldata.sender,
-            keccak256(bytes(_calldata.parameters))
-        ));
+            _id,
+            _sender,
+            keccak256(bytes(_contents))
+        )));
         return ECDSA.recover(digest, _signature);
     }
 
 
     function proposing(
-        uint256 _id, 
-        string calldata _name, 
-        string calldata _content,
-        context calldata _calldata,
+        uint256 _id,  
+        address calldata _sender,
+        string calldata _name,
+        string calldata _contents,
         bytes calldata _signature
-    ) 
-        external
-    {
-        require(!proposals[_id].isProposed, "Already proposed");
-        address _msgSender = verify(_signature, "proposing(uint256 _id, string _name, string _content)", _calldata);
+    ) external {
+        if(proposals[_id].isProposed) revert("Already proposed");
+        address _msgSender = _verify(_id, _sender, _contents, _signature, "propose(uint256 _id, address _sender, string _contents)");
         _setStatus(
             _id,
             _name,
-            _content,
+            _contents,
             _msgSender
         );
-        emit Proposing(_msgSender, _name, _content);
+        emit Proposing(_msgSender, _name, _contents);
     }
 
 
     // voting by user.
     function voting(
         uint256 _id,
+        address _sender,
+        string calldata _contents,
         bool _approval,
-        context calldata _calldata,
         bytes calldata _signature
     ) external {
-        address _msgSender = verify(_signature, "voting(uint256 _id, bool _ballot)", _calldata);
+        address _msgSender = _verify(_id, _sender, _contents, _signature, "voting(uint256 _id, bool _approval)");
         require(!proposals[_id].isProposed, "Undefined the proposal");
         require(!isVoted(_id, _msgSender), "Already voted");
 
